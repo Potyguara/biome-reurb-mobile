@@ -19,6 +19,7 @@ import '../../../core/widgets/loading_dialog.dart';
 import '../../../data/local/database_provider.dart';
 import '../data/lot_geometry_sync_database.dart';
 import '../data/lot_geometry_sync_repository.dart';
+import 'package:uuid/uuid.dart';
 
 class VetorizacaoLotePage extends ConsumerStatefulWidget {
   const VetorizacaoLotePage({super.key});
@@ -33,7 +34,7 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
 
   final List<LatLng> _vertices = [];
 
-  String _vetorizacaoId = 'vetorizacao_lote_cidadao_padrao';
+  String _vetorizacaoId = const Uuid().v4();
 
   String? _projetoId;
   String? _selagemId;
@@ -1147,14 +1148,6 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
       _selagemId = _selagemSelecionadaId;
     }
 
-    if (_codigoSelo != null && _codigoSelo!.isNotEmpty) {
-      _vetorizacaoId = 'vetorizacao_${_codigoSelo!}';
-    } else if (_selagemId != null && _selagemId!.isNotEmpty) {
-      _vetorizacaoId = 'vetorizacao_selagem_${_selagemId!}';
-    } else if (_codigoLote != null && _codigoLote!.isNotEmpty) {
-      _vetorizacaoId = 'vetorizacao_lote_${_codigoLote!}';
-    }
-
     final db = ref.read(appDatabaseProvider);
 
     await db.salvarVetorizacaoLoteCidadao(
@@ -1173,6 +1166,9 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
           'Vetorização assistida pelo cidadão com apoio do cadastrador.',
       printPath: null,
     );
+    if (status != 'rascunho') {
+      _vetorizacaoId = const Uuid().v4();
+    }
   }
 
   Future<void> _mostrarAviso({
