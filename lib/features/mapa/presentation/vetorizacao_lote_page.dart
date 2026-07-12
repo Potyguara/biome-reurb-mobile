@@ -1166,9 +1166,6 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
           'Vetorização assistida pelo cidadão com apoio do cadastrador.',
       printPath: null,
     );
-    if (status != 'rascunho') {
-      _vetorizacaoId = const Uuid().v4();
-    }
   }
 
   Future<void> _mostrarAviso({
