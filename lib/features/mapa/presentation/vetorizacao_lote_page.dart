@@ -17,6 +17,8 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 import '../../../core/widgets/loading_dialog.dart';
 import '../../../data/local/database_provider.dart';
+import '../data/lot_geometry_sync_database.dart';
+import '../data/lot_geometry_sync_repository.dart';
 
 class VetorizacaoLotePage extends ConsumerStatefulWidget {
   const VetorizacaoLotePage({super.key});
@@ -1008,6 +1010,26 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
     }
   }
 
+  Future<LotGeometrySyncResult> _sincronizarGeometriaAtual() async {
+    final projectId = _projetoId;
+
+    if (projectId == null || projectId.isEmpty) {
+      return const LotGeometrySyncResult.empty();
+    }
+
+    final db = ref.read(appDatabaseProvider);
+
+    await db.prepararVetorizacoesCidadaoParaSincronizacao(
+      projectId: projectId,
+    );
+
+    return ref.read(lotGeometrySyncRepositoryProvider).synchronize(
+          projectId: projectId,
+          limit: 100,
+          pullAfterPush: true,
+        );
+  }
+
   Future<void> _salvarRascunho() async {
     if (!_temSelagemVinculada()) {
       await _mostrarAviso(
@@ -1027,12 +1049,16 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
     }
 
     await _persistirVetorizacao(status: 'rascunho');
+    final syncResult = await _sincronizarGeometriaAtual();
     await _carregarVetorizacoesSalvasParaMapa();
 
     await _mostrarAviso(
       titulo: 'Rascunho salvo',
-      mensagem:
-          'A vetorização foi salva no banco local. Ao retornar nesta tela, o lote será carregado automaticamente.',
+      mensagem: syncResult.allAccepted
+          ? 'A vetorização foi salva e sincronizada com o painel web.'
+          : syncResult.offline
+              ? 'A vetorização foi salva no aparelho e ficará aguardando conexão.'
+              : 'A vetorização foi salva no aparelho e permanece na fila de sincronização.',
     );
   }
 
@@ -1090,14 +1116,22 @@ class _VetorizacaoLotePageState extends ConsumerState<VetorizacaoLotePage> {
     await _persistirVetorizacao(
       status: 'aguardando_validacao_tecnica',
     );
+    final syncResult = await _sincronizarGeometriaAtual();
     await _carregarVetorizacoesSalvasParaMapa();
 
     if (!mounted) return;
 
+    final syncMessage = syncResult.allAccepted
+        ? 'A geometria foi enviada ao painel web.'
+        : syncResult.offline
+            ? 'A geometria ficou protegida no aparelho e será reenviada quando houver conexão.'
+            : 'A geometria permanece na fila de sincronização.';
+
     await _mostrarAviso(
       titulo: 'Vetorização concluída',
-      mensagem:
-          'A pré-delimitação do lote foi concluída.\n\nStatus: aguardando validação técnica.',
+      mensagem: 'A pré-delimitação do lote foi concluída.\n\n'
+          'Status: aguardando validação técnica.\n\n'
+          '$syncMessage',
     );
   }
 
