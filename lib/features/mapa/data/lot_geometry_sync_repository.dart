@@ -27,6 +27,16 @@ class LotGeometrySyncRepository {
   final Dio _dio;
   final AppDatabase _database;
 
+  String? _nullableText(Object? value) {
+    final text = value?.toString().trim();
+
+    if (text == null || text.isEmpty || text.toLowerCase() == 'null') {
+      return null;
+    }
+
+    return text;
+  }
+
   Future<LotGeometrySyncResult> synchronize({
     required String projectId,
     int limit = 500,
@@ -221,10 +231,14 @@ class LotGeometrySyncRepository {
 
     return {
       'source_local_id': row['id'].toString(),
-      'source_device_id': row['source_device_id'].toString(),
+      'source_device_id': _nullableText(
+        row['source_device_id'],
+      ),
       'lot_id': null,
-      'seal_id': null,
-      'social_registration_id': null,
+      'seal_id': _nullableText(row['selagem_id']),
+      'social_registration_id': _nullableText(
+        row['cadastro_social_id'],
+      ),
       'origin': 'cidadao_vetorizado',
       'workflow_status': switch (status) {
         'aguardando_validacao_tecnica' => 'aguardando_validacao',

@@ -439,6 +439,17 @@ extension LotGeometrySyncDatabase on AppDatabase {
     );
   }
 
+  String _localGeometryStatus(String? remoteStatus) {
+    return switch (remoteStatus) {
+      'aguardando_validacao' => 'aguardando_validacao_tecnica',
+      'validado' => 'validado_tecnico',
+      'rejeitado' => 'rejeitado_tecnico',
+      'substituido' => 'substituido',
+      'arquivado' => 'arquivado',
+      _ => remoteStatus ?? 'rascunho',
+    };
+  }
+
   Future<void> aplicarGeometriaRemota(
     Map<String, dynamic> record,
   ) async {
@@ -456,9 +467,7 @@ extension LotGeometrySyncDatabase on AppDatabase {
       return;
     }
 
-    final geometryJson = record['geometry_geojson'] == null
-        ? null
-        : record['geometry_geojson'].toString();
+    final geometryJson = record['geometry_geojson']?.toString();
 
     await customStatement(
       '''
@@ -524,17 +533,51 @@ extension LotGeometrySyncDatabase on AppDatabase {
       variables: [Variable.withString(sourceLocalId)],
     ).getSingleOrNull();
 
-    if (localExists == null) return;
+    if (localExists == null) {
+      await customStatement(
+        '''
+        INSERT INTO lotes_vetorizados_cidadao (
+          id,
+          projeto_id,
+          selagem_id,
+          cadastro_social_id,
+          codigo_selo,
+          codigo_lote,
+          geometria_geojson,
+          area_m2,
+          perimetro_m,
+          origem,
+          status,
+          observacoes,
+          synced,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+        ''',
+        [
+          sourceLocalId,
+          projectId,
+          record['seal_id']?.toString(),
+          record['social_registration_id']?.toString(),
+          geometryJson,
+          record['area_m2'],
+          record['perimeter_m'],
+          record['origin']?.toString() ?? 'painel_web',
+          _localGeometryStatus(
+            record['workflow_status']?.toString(),
+          ),
+          record['validation_note']?.toString(),
+          DateTime.now().toIso8601String(),
+          DateTime.now().toIso8601String(),
+        ],
+      );
 
-    final remoteStatus = record['workflow_status']?.toString();
-    final localStatus = switch (remoteStatus) {
-      'aguardando_validacao' => 'aguardando_validacao_tecnica',
-      'validado' => 'validado_tecnico',
-      'rejeitado' => 'rejeitado_tecnico',
-      'substituido' => 'substituido',
-      'arquivado' => 'arquivado',
-      _ => remoteStatus ?? 'rascunho',
-    };
+      return;
+    }
+
+    final localStatus = _localGeometryStatus(
+      record['workflow_status']?.toString(),
+    );
 
     await customStatement(
       '''
