@@ -5,12 +5,15 @@ import '../../../data/local/database_provider.dart';
 import '../../mapa/data/lot_geometry_sync_database.dart';
 import '../../mapa/data/lot_geometry_sync_repository.dart';
 import '../../selagem/data/seal_sync_repository.dart';
+import '../data/field_record_sync_database.dart';
+import '../data/field_record_sync_repository.dart';
 
 final syncCenterControllerProvider =
     StateNotifierProvider<SyncCenterController, SyncCenterState>((ref) {
   return SyncCenterController(
     database: ref.watch(appDatabaseProvider),
     sealRepository: ref.watch(sealSyncRepositoryProvider),
+    fieldRepository: ref.watch(fieldRecordSyncRepositoryProvider),
     geometryRepository: ref.watch(lotGeometrySyncRepositoryProvider),
   );
 });
@@ -19,37 +22,64 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
   SyncCenterController({
     required AppDatabase database,
     required SealSyncRepository sealRepository,
+    required FieldRecordSyncRepository fieldRepository,
     required LotGeometrySyncRepository geometryRepository,
   })  : _database = database,
         _sealRepository = sealRepository,
+        _fieldRepository = fieldRepository,
         _geometryRepository = geometryRepository,
         super(const SyncCenterState.initial());
 
   final AppDatabase _database;
   final SealSyncRepository _sealRepository;
+  final FieldRecordSyncRepository _fieldRepository;
   final LotGeometrySyncRepository _geometryRepository;
 
   Future<void> load() async {
     await _database.ensureLotGeometrySyncInfrastructure();
 
     final sealSummary = await _database.resumoSincronizacaoSelagens();
+
+    final fieldSummary = await _database.resumoSincronizacaoCadastros();
+
     final geometrySummary = await _database.resumoSincronizacaoGeometrias();
 
-    final sealFailures =
-        await _database.listarFalhasSincronizacaoSelagens(limit: 20);
-    final geometryFailures = await _database.listarFalhasGeometrias(limit: 20);
+    final sealFailures = await _database.listarFalhasSincronizacaoSelagens(
+      limit: 20,
+    );
+
+    final fieldFailures = await _database.listarFalhasCadastros(
+      limit: 20,
+    );
+
+    final geometryFailures = await _database.listarFalhasGeometrias(
+      limit: 20,
+    );
 
     state = state.copyWith(
-      summary: _mergeSummary(sealSummary, geometrySummary),
+      summary: _mergeSummary(
+        sealSummary,
+        fieldSummary,
+        geometrySummary,
+      ),
       failures: [
-        ...sealFailures.map((item) => {
-              ...item,
-              'entity_type': 'seal',
-            }),
-        ...geometryFailures.map((item) => {
-              ...item,
-              'entity_type': 'lot_geometry',
-            }),
+        ...sealFailures.map(
+          (item) => {
+            ...item,
+            'entity_type': 'seal',
+          },
+        ),
+        ...fieldFailures.map(
+          (item) => {
+            ...item,
+          },
+        ),
+        ...geometryFailures.map(
+          (item) => {
+            ...item,
+            'entity_type': 'lot_geometry',
+          },
+        ),
       ],
       loading: false,
     );
@@ -71,10 +101,21 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
         projectId: projectId,
       );
 
-      await _database.liberarGeometriasParaNovaTentativa(projectId);
+      await _database.liberarCadastrosParaNovaTentativa(
+        projectId,
+      );
+
+      await _database.liberarGeometriasParaNovaTentativa(
+        projectId,
+      );
     }
 
     final sealResult = await _sealRepository.synchronize(
+      projectId: projectId,
+      limit: 500,
+    );
+
+    final fieldResult = await _fieldRepository.synchronize(
       projectId: projectId,
       limit: 500,
     );
@@ -86,13 +127,19 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
     );
 
     final result = SyncBatchResult(
-      attempted: sealResult.attempted + geometryResult.attempted,
-      accepted: sealResult.accepted + geometryResult.accepted,
-      rejected: sealResult.rejected + geometryResult.rejected,
+      attempted: sealResult.attempted +
+          fieldResult.attempted +
+          geometryResult.attempted,
+      accepted:
+          sealResult.accepted + fieldResult.accepted + geometryResult.accepted,
+      rejected:
+          sealResult.rejected + fieldResult.rejected + geometryResult.rejected,
       conflicts: sealResult.conflicts + geometryResult.conflicts,
       pulled: geometryResult.pulled,
-      offline: sealResult.offline || geometryResult.offline,
-      message: geometryResult.message ?? sealResult.message,
+      offline:
+          sealResult.offline || fieldResult.offline || geometryResult.offline,
+      message:
+          geometryResult.message ?? fieldResult.message ?? sealResult.message,
     );
 
     await load();
@@ -111,14 +158,25 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
 
   Map<String, int> _mergeSummary(
     Map<String, int> seals,
+    Map<String, int> fields,
     Map<String, int> geometries,
   ) {
     return {
-      'pending': (seals['pending'] ?? 0) + (geometries['pending'] ?? 0),
-      'syncing': (seals['syncing'] ?? 0) + (geometries['syncing'] ?? 0),
-      'synced': (seals['synced'] ?? 0) + (geometries['synced'] ?? 0),
-      'failed': (seals['failed'] ?? 0) + (geometries['failed'] ?? 0),
-      'conflict': (seals['conflict'] ?? 0) + (geometries['conflict'] ?? 0),
+      'pending': (seals['pending'] ?? 0) +
+          (fields['pending'] ?? 0) +
+          (geometries['pending'] ?? 0),
+      'syncing': (seals['syncing'] ?? 0) +
+          (fields['syncing'] ?? 0) +
+          (geometries['syncing'] ?? 0),
+      'synced': (seals['synced'] ?? 0) +
+          (fields['synced'] ?? 0) +
+          (geometries['synced'] ?? 0),
+      'failed': (seals['failed'] ?? 0) +
+          (fields['failed'] ?? 0) +
+          (geometries['failed'] ?? 0),
+      'conflict': (seals['conflict'] ?? 0) +
+          (fields['conflict'] ?? 0) +
+          (geometries['conflict'] ?? 0),
     };
   }
 }
