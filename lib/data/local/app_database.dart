@@ -92,8 +92,7 @@ class Selagens extends Table {
 
   TextColumn get serverId => text().nullable()();
   TextColumn get sourceDeviceId => text().nullable()();
-  TextColumn get syncStatus =>
-      text().withDefault(const Constant('pending'))();
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
   IntColumn get syncAttempts => integer().withDefault(const Constant(0))();
   TextColumn get syncError => text().nullable()();
   DateTimeColumn get lastSyncAttemptAt => dateTime().nullable()();
@@ -110,7 +109,6 @@ class Selagens extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
-
 
 class MobileSealCodeReservations extends Table {
   TextColumn get id => text()();
@@ -2377,36 +2375,43 @@ s.observacao_geoespacial,
     String? observacoes,
     required String sourceDeviceId,
   }) async {
+    final now = DateTime.now().toIso8601String();
+
     await customStatement(
       '''
-    UPDATE selagens
-    SET
-      projeto_id = ?,
-      lote_id = ?,
-      lote_preliminar_id = ?,
-      codigo_lote_preliminar = ?,
-      status_vinculo_geografico = ?,
-      necessita_validacao_rtk = ?,
-      observacao_geoespacial = ?,
-      codigo_selo = ?,
-      situacao = ?,
-      morador_presente = ?,
-      moradia_ocupada = ?,
-      situacao_atendimento = ?,
-      tipo_unidade = ?,
-      uso_imovel = ?,
-      nome_informante = ?,
-      telefone_informante = ?,
-      relacao_informante = ?,
-      revisita_necessaria = ?,
-      latitude = ?,
-      longitude = ?,
-      precisao_gps = ?,
-      foto_fachada_path = ?,
-      observacoes = ?,
-      synced = 0
-    WHERE id = ?
-    ''',
+      UPDATE selagens
+      SET
+        projeto_id = ?,
+        lote_id = ?,
+        lote_preliminar_id = ?,
+        codigo_lote_preliminar = ?,
+        status_vinculo_geografico = ?,
+        necessita_validacao_rtk = ?,
+        observacao_geoespacial = ?,
+        codigo_selo = ?,
+        situacao = ?,
+        morador_presente = ?,
+        moradia_ocupada = ?,
+        situacao_atendimento = ?,
+        tipo_unidade = ?,
+        uso_imovel = ?,
+        nome_informante = ?,
+        telefone_informante = ?,
+        relacao_informante = ?,
+        revisita_necessaria = ?,
+        latitude = ?,
+        longitude = ?,
+        precisao_gps = ?,
+        foto_fachada_path = ?,
+        observacoes = ?,
+        synced = 0,
+        source_device_id = ?,
+        sync_status = 'pending',
+        sync_error = NULL,
+        sync_attempts = 0,
+        local_updated_at = ?
+      WHERE id = ?
+      ''',
       [
         projetoId,
         loteId,
@@ -2432,7 +2437,7 @@ s.observacao_geoespacial,
         fotoFachadaPath,
         observacoes,
         sourceDeviceId,
-        DateTime.now().toIso8601String(),
+        now,
         id,
       ],
     );
@@ -3098,8 +3103,6 @@ s.observacao_geoespacial,
     return row.data['total'] as int? ?? 0;
   }
 
-
-
   Future<void> marcarFilaComoSincronizando(
     List<String> queueIds,
   ) async {
@@ -3293,7 +3296,6 @@ s.observacao_geoespacial,
 
     return result;
   }
-
 
   Future<void> liberarFilaParaTentativa({
     required String entityType,

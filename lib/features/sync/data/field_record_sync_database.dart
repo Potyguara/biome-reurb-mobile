@@ -208,7 +208,7 @@ extension FieldRecordSyncDatabase on AppDatabase {
           'social_registration',
           'physical_registration'
         )
-        AND status IN ('failed', 'syncing')
+        AND status = 'syncing'
       ''',
       [
         now,
