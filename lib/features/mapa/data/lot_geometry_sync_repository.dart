@@ -235,7 +235,9 @@ class LotGeometrySyncRepository {
         row['source_device_id'],
       ),
       'lot_id': null,
-      'seal_id': _nullableText(row['selagem_id']),
+      'seal_id': _nullableText(
+        row['seal_server_id'],
+      ),
       'social_registration_id': _nullableText(
         row['cadastro_social_id'],
       ),

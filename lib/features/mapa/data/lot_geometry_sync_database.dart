@@ -185,23 +185,51 @@ extension LotGeometrySyncDatabase on AppDatabase {
         lv.observacoes,
         lv.created_at,
         lv.updated_at,
+
+        s.server_id AS seal_server_id,
+        s.sync_status AS seal_sync_status,
+        s.deleted_locally AS seal_deleted_locally,
+
         gs.server_id,
         gs.source_device_id,
         gs.sync_version,
         gs.deleted_locally,
         q.id AS queue_id
+
       FROM sync_queue q
+
       INNER JOIN lotes_vetorizados_cidadao lv
         ON lv.id = q.entity_id
+
       INNER JOIN lot_geometry_sync_state gs
         ON gs.local_id = lv.id
+
+      LEFT JOIN selagens s
+        ON s.id = lv.selagem_id
+        OR (
+          lv.codigo_selo IS NOT NULL
+          AND s.codigo_selo = lv.codigo_selo
+          AND s.projeto_id = lv.projeto_id
+        )
+
       WHERE q.entity_type = 'lot_geometry'
         AND q.project_id = ?
         AND q.status IN ('pending', 'failed')
+
+        AND (
+          lv.selagem_id IS NULL
+          OR (
+            s.server_id IS NOT NULL
+            AND s.sync_status = 'synced'
+            AND COALESCE(s.deleted_locally, 0) = 0
+          )
+        )
+
         AND (
           q.next_attempt_at IS NULL
           OR q.next_attempt_at <= ?
         )
+
       ORDER BY q.created_at ASC
       LIMIT ?
       ''',
@@ -396,7 +424,7 @@ extension LotGeometrySyncDatabase on AppDatabase {
         updated_at = ?
       WHERE entity_type = 'lot_geometry'
         AND project_id = ?
-        AND status IN ('failed', 'syncing')
+        AND status = 'syncing'
       ''',
       [now, projectId],
     );
