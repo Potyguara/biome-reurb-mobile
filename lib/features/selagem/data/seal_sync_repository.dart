@@ -6,6 +6,7 @@ import '../../../core/api/api_client.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../data/local/app_database.dart';
 import '../../../data/local/database_provider.dart';
+import 'seal_remote_sync_database.dart';
 
 final sealSyncRepositoryProvider = Provider<SealSyncRepository>((ref) {
   return SealSyncRepository(
@@ -40,7 +41,19 @@ class SealSyncRepository {
         .toList();
 
     if (projectRows.isEmpty) {
-      return const SealSyncResult.empty();
+      try {
+        await _pullRemoteSeals(projectId: projectId);
+        return const SealSyncResult.empty();
+      } on DioException catch (error) {
+        return SealSyncResult(
+          attempted: 0,
+          accepted: 0,
+          rejected: 0,
+          conflicts: 0,
+          offline: _isConnectionFailure(error),
+          message: _dioMessage(error),
+        );
+      }
     }
 
     final records = <Map<String, dynamic>>[];
@@ -137,6 +150,7 @@ class SealSyncRepository {
           message: 'O servidor não confirmou o processamento da selagem.',
         );
       }
+      await _pullRemoteSeals(projectId: projectId);
 
       return SealSyncResult(
         attempted: records.length,
@@ -198,6 +212,28 @@ class SealSyncRepository {
         message: message,
       );
     }
+  }
+
+  Future<int> _pullRemoteSeals({
+    required String projectId,
+    int limit = 1000,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/mobile/sync/seals',
+      queryParameters: {
+        'project_id': projectId,
+        'limit': limit,
+      },
+    );
+
+    final data = response.data ?? const <String, dynamic>{};
+    final records = _listOfMaps(data['records']);
+
+    for (final record in records) {
+      await _database.aplicarSelagemRemota(record);
+    }
+
+    return records.length;
   }
 
   Map<String, dynamic> _serializeSeal(Map<String, Object?> row) {

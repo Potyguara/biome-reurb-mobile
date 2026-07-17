@@ -2773,6 +2773,7 @@ s.observacao_geoespacial,
       p.bairro AS projeto_bairro
     FROM selagens s
     LEFT JOIN projetos p ON p.id = s.projeto_id
+    WHERE COALESCE(s.deleted_locally, 0) = 0
     ORDER BY s.created_at DESC
     ''',
     ).get();
