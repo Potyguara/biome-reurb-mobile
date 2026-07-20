@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/local/app_database.dart';
 import '../../../data/local/database_provider.dart';
+import '../../documentos/data/document_sync_database.dart';
+import '../../documentos/data/document_sync_repository.dart';
 import '../../mapa/data/lot_geometry_sync_database.dart';
 import '../../mapa/data/lot_geometry_sync_repository.dart';
 import '../../selagem/data/seal_sync_repository.dart';
@@ -15,6 +17,7 @@ final syncCenterControllerProvider =
     sealRepository: ref.watch(sealSyncRepositoryProvider),
     fieldRepository: ref.watch(fieldRecordSyncRepositoryProvider),
     geometryRepository: ref.watch(lotGeometrySyncRepositoryProvider),
+    documentRepository: ref.watch(documentSyncRepositoryProvider),
   );
 });
 
@@ -24,25 +27,27 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
     required SealSyncRepository sealRepository,
     required FieldRecordSyncRepository fieldRepository,
     required LotGeometrySyncRepository geometryRepository,
+    required DocumentSyncRepository documentRepository,
   })  : _database = database,
         _sealRepository = sealRepository,
         _fieldRepository = fieldRepository,
         _geometryRepository = geometryRepository,
+        _documentRepository = documentRepository,
         super(const SyncCenterState.initial());
 
   final AppDatabase _database;
   final SealSyncRepository _sealRepository;
   final FieldRecordSyncRepository _fieldRepository;
   final LotGeometrySyncRepository _geometryRepository;
+  final DocumentSyncRepository _documentRepository;
 
   Future<void> load() async {
     await _database.ensureLotGeometrySyncInfrastructure();
 
     final sealSummary = await _database.resumoSincronizacaoSelagens();
-
     final fieldSummary = await _database.resumoSincronizacaoCadastros();
-
     final geometrySummary = await _database.resumoSincronizacaoGeometrias();
+    final documentSummary = await _database.resumoSincronizacaoDocumentos();
 
     final sealFailures = await _database.listarFalhasSincronizacaoSelagens(
       limit: 20,
@@ -56,11 +61,16 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
       limit: 20,
     );
 
+    final documentFailures = await _database.listarFalhasDocumentos(
+      limit: 20,
+    );
+
     state = state.copyWith(
       summary: _mergeSummary(
         sealSummary,
         fieldSummary,
         geometrySummary,
+        documentSummary,
       ),
       failures: [
         ...sealFailures.map(
@@ -69,15 +79,17 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
             'entity_type': 'seal',
           },
         ),
-        ...fieldFailures.map(
-          (item) => {
-            ...item,
-          },
-        ),
+        ...fieldFailures,
         ...geometryFailures.map(
           (item) => {
             ...item,
             'entity_type': 'lot_geometry',
+          },
+        ),
+        ...documentFailures.map(
+          (item) => {
+            ...item,
+            'entity_type': 'document',
           },
         ),
       ],
@@ -93,7 +105,10 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
       return const SyncBatchResult.empty();
     }
 
-    state = state.copyWith(syncing: true, message: null);
+    state = state.copyWith(
+      syncing: true,
+      message: null,
+    );
 
     if (forceRetry) {
       await _database.liberarFilaParaTentativa(
@@ -106,6 +121,10 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
       );
 
       await _database.liberarGeometriasParaNovaTentativa(
+        projectId,
+      );
+
+      await _database.liberarDocumentosParaNovaTentativa(
         projectId,
       );
     }
@@ -126,20 +145,37 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
       pullAfterPush: true,
     );
 
+    final documentResult = await _documentRepository.synchronize(
+      projectId: projectId,
+      limit: 500,
+      pullAfterPush: true,
+    );
+
     final result = SyncBatchResult(
       attempted: sealResult.attempted +
           fieldResult.attempted +
-          geometryResult.attempted,
-      accepted:
-          sealResult.accepted + fieldResult.accepted + geometryResult.accepted,
-      rejected:
-          sealResult.rejected + fieldResult.rejected + geometryResult.rejected,
-      conflicts: sealResult.conflicts + geometryResult.conflicts,
-      pulled: geometryResult.pulled,
-      offline:
-          sealResult.offline || fieldResult.offline || geometryResult.offline,
-      message:
-          geometryResult.message ?? fieldResult.message ?? sealResult.message,
+          geometryResult.attempted +
+          documentResult.attempted,
+      accepted: sealResult.accepted +
+          fieldResult.accepted +
+          geometryResult.accepted +
+          documentResult.accepted,
+      rejected: sealResult.rejected +
+          fieldResult.rejected +
+          geometryResult.rejected +
+          documentResult.rejected,
+      conflicts: sealResult.conflicts +
+          geometryResult.conflicts +
+          documentResult.conflicts,
+      pulled: geometryResult.pulled + documentResult.pulled,
+      offline: sealResult.offline ||
+          fieldResult.offline ||
+          geometryResult.offline ||
+          documentResult.offline,
+      message: documentResult.message ??
+          geometryResult.message ??
+          fieldResult.message ??
+          sealResult.message,
     );
 
     await load();
@@ -160,23 +196,29 @@ class SyncCenterController extends StateNotifier<SyncCenterState> {
     Map<String, int> seals,
     Map<String, int> fields,
     Map<String, int> geometries,
+    Map<String, int> documents,
   ) {
     return {
       'pending': (seals['pending'] ?? 0) +
           (fields['pending'] ?? 0) +
-          (geometries['pending'] ?? 0),
+          (geometries['pending'] ?? 0) +
+          (documents['pending'] ?? 0),
       'syncing': (seals['syncing'] ?? 0) +
           (fields['syncing'] ?? 0) +
-          (geometries['syncing'] ?? 0),
+          (geometries['syncing'] ?? 0) +
+          (documents['syncing'] ?? 0),
       'synced': (seals['synced'] ?? 0) +
           (fields['synced'] ?? 0) +
-          (geometries['synced'] ?? 0),
+          (geometries['synced'] ?? 0) +
+          (documents['synced'] ?? 0),
       'failed': (seals['failed'] ?? 0) +
           (fields['failed'] ?? 0) +
-          (geometries['failed'] ?? 0),
+          (geometries['failed'] ?? 0) +
+          (documents['failed'] ?? 0),
       'conflict': (seals['conflict'] ?? 0) +
           (fields['conflict'] ?? 0) +
-          (geometries['conflict'] ?? 0),
+          (geometries['conflict'] ?? 0) +
+          (documents['conflict'] ?? 0),
     };
   }
 }

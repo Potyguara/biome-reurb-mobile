@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,10 +22,8 @@ class SyncPage extends ConsumerStatefulWidget {
   ConsumerState<SyncPage> createState() => _SyncPageState();
 }
 
-class _SyncPageState extends ConsumerState<SyncPage>
-    with WidgetsBindingObserver {
+class _SyncPageState extends ConsumerState<SyncPage> {
   String? _ultimoArquivoExportado;
-  Timer? _automaticRetryTimer;
 
   CellValue _cell(Object? value) {
     if (value == null) return TextCellValue('');
@@ -56,33 +53,19 @@ class _SyncPageState extends ConsumerState<SyncPage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     _carregarResumo();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(syncCenterControllerProvider.notifier).load();
-      await _sincronizarAgora(silent: true);
-    });
+      if (!mounted) return;
 
-    _automaticRetryTimer = Timer.periodic(
-      const Duration(minutes: 2),
-      (_) => _sincronizarAgora(silent: true),
-    );
+      await ref.read(syncCenterControllerProvider.notifier).load();
+    });
   }
 
   @override
   void dispose() {
-    _automaticRetryTimer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _sincronizarAgora(silent: true);
-    }
   }
 
   Future<void> _sincronizarAgora({bool silent = false}) async {

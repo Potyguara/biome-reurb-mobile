@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../mobile/presentation/device_identity_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -440,6 +441,7 @@ class _DocumentosPageState extends ConsumerState<DocumentosPage> {
     final arquivoExistentePath = _arquivoOriginalPath;
 
     final arquivoBasePath = arquivoSelecionadoPath ?? arquivoExistentePath;
+    final sourceDeviceId = await ref.read(deviceIdentityProvider.future);
 
     if (arquivoBasePath == null || arquivoBasePath.isEmpty) {
       await _mostrarAviso(
@@ -510,6 +512,7 @@ class _DocumentosPageState extends ConsumerState<DocumentosPage> {
           tipoDocumento: _tipoDocumento,
           arquivoPath: arquivoPersistentePath,
           observacoes: observacoes,
+          sourceDeviceId: sourceDeviceId,
         );
       }
 

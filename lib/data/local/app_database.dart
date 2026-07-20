@@ -1090,6 +1090,7 @@ s.observacao_geoespacial,
   Future<void> inserirDocumentoReurb({
     required String id,
     required String projetoId,
+    required String sourceDeviceId,
     String? selagemId,
     String? cadastroSocialId,
     required String codigoSelo,
@@ -1099,19 +1100,24 @@ s.observacao_geoespacial,
   }) async {
     await customStatement(
       '''
-    INSERT OR REPLACE INTO documentos_reurb (
-      id,
-      projeto_id,
-      selagem_id,
-      cadastro_social_id,
-      codigo_selo,
-      tipo_documento,
-      arquivo_path,
-      observacoes,
-      synced,
-      created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''',
+      INSERT OR REPLACE INTO documentos_reurb (
+        id,
+        projeto_id,
+        selagem_id,
+        cadastro_social_id,
+        codigo_selo,
+        tipo_documento,
+        arquivo_path,
+        observacoes,
+        synced,
+        source_device_id,
+        sync_status,
+        sync_error,
+        local_updated_at,
+        deleted_locally,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ''',
       [
         id,
         projetoId,
@@ -1122,8 +1128,19 @@ s.observacao_geoespacial,
         arquivoPath,
         observacoes,
         0,
-        DateTime.now().toIso8601String(),
+        sourceDeviceId, // <- aqui
+        'pending',
+        null,
+        DateTime.now().toUtc().toIso8601String(),
+        0,
+        DateTime.now().toUtc().toIso8601String(),
       ],
+    );
+
+    await enfileirarSincronizacao(
+      entityType: 'document',
+      entityId: id,
+      projectId: projetoId,
     );
   }
 
@@ -1139,23 +1156,22 @@ s.observacao_geoespacial,
   }) async {
     await customStatement(
       '''
-    UPDATE documentos_reurb
-    SET
-      projeto_id = ?,
-      selagem_id = ?,
-      cadastro_social_id = ?,
-      codigo_selo = ?,
-      tipo_documento = ?,
-      arquivo_path = ?,
-      observacoes = ?,
-      synced = 0,
-      source_device_id = ?,
-      sync_status = 'pending',
-      sync_error = NULL,
-      local_updated_at = ?,
-      deleted_locally = 0
-    WHERE id = ?
-    ''',
+      UPDATE documentos_reurb
+      SET
+        projeto_id = ?,
+        selagem_id = ?,
+        cadastro_social_id = ?,
+        codigo_selo = ?,
+        tipo_documento = ?,
+        arquivo_path = ?,
+        observacoes = ?,
+        synced = 0,
+        sync_status = 'pending',
+        sync_error = NULL,
+        local_updated_at = ?,
+        deleted_locally = 0
+      WHERE id = ?
+      ''',
       [
         projetoId,
         selagemId,
@@ -1164,8 +1180,15 @@ s.observacao_geoespacial,
         tipoDocumento,
         arquivoPath,
         observacoes,
+        DateTime.now().toUtc().toIso8601String(),
         id,
       ],
+    );
+
+    await enfileirarSincronizacao(
+      entityType: 'document',
+      entityId: id,
+      projectId: projetoId,
     );
   }
 
@@ -1198,11 +1221,38 @@ s.observacao_geoespacial,
 
     await customStatement(
       '''
-    DELETE FROM documentos_reurb
+    UPDATE documentos_reurb
+    SET
+        deleted_locally = 1,
+        synced = 0,
+        sync_status = 'pending',
+        sync_error = NULL,
+        local_updated_at = ?
     WHERE id = ?
     ''',
-      [id],
+      [
+        DateTime.now().toUtc().toIso8601String(),
+        id,
+      ],
     );
+    final documentoAtualizado = await customSelect(
+      '''
+      SELECT projeto_id
+      FROM documentos_reurb
+      WHERE id = ?
+      ''',
+      variables: [
+        Variable.withString(id),
+      ],
+    ).getSingleOrNull();
+
+    if (documentoAtualizado != null) {
+      await enfileirarSincronizacao(
+        entityType: 'document',
+        entityId: id,
+        projectId: documentoAtualizado.data['projeto_id'].toString(),
+      );
+    }
   }
 
   Future<List<Map<String, Object?>>>
@@ -1983,7 +2033,7 @@ s.observacao_geoespacial,
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   Future<void> inserirCadastroFisico({
     required String id,
@@ -2343,6 +2393,61 @@ s.observacao_geoespacial,
 
           await m.createTable(mobileSealCodeReservations);
           await m.createTable(syncQueue);
+        }
+        if (from < 12) {
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN source_device_id TEXT',
+          );
+
+          await customStatement(
+            "ALTER TABLE documentos_reurb ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'pending'",
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN sync_attempts INTEGER NOT NULL DEFAULT 0',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN sync_error TEXT',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN last_sync_attempt_at INTEGER',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN synced_at INTEGER',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN local_updated_at INTEGER',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN server_updated_at INTEGER',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN sync_version INTEGER NOT NULL DEFAULT 0',
+          );
+
+          await customStatement(
+            'ALTER TABLE documentos_reurb ADD COLUMN deleted_locally INTEGER NOT NULL DEFAULT 0',
+          );
+
+          await customStatement(
+            '''
+            UPDATE documentos_reurb
+            SET
+              sync_status = CASE
+                WHEN synced = 1 THEN 'synced'
+                ELSE 'pending'
+              END,
+              local_updated_at = CAST(
+                strftime('%s', COALESCE(created_at, CURRENT_TIMESTAMP)) AS INTEGER
+              )
+            ''',
+          );
         }
       },
     );
@@ -3502,6 +3607,29 @@ class DocumentosReurb extends Table {
   TextColumn get observacoes => text().nullable()();
 
   BoolColumn get synced => boolean().withDefault(const Constant(false))();
+
+  TextColumn get sourceDeviceId => text().nullable()();
+
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+
+  IntColumn get syncAttempts => integer().withDefault(const Constant(0))();
+
+  TextColumn get syncError => text().nullable()();
+
+  DateTimeColumn get lastSyncAttemptAt => dateTime().nullable()();
+
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+
+  DateTimeColumn get localUpdatedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+
+  DateTimeColumn get serverUpdatedAt => dateTime().nullable()();
+
+  IntColumn get syncVersion => integer().withDefault(const Constant(0))();
+
+  BoolColumn get deletedLocally =>
+      boolean().withDefault(const Constant(false))();
+
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override

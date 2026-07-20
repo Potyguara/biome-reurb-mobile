@@ -5256,6 +5256,78 @@ class $DocumentosReurbTable extends DocumentosReurb
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("synced" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _sourceDeviceIdMeta =
+      const VerificationMeta('sourceDeviceId');
+  @override
+  late final GeneratedColumn<String> sourceDeviceId = GeneratedColumn<String>(
+      'source_device_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('pending'));
+  static const VerificationMeta _syncAttemptsMeta =
+      const VerificationMeta('syncAttempts');
+  @override
+  late final GeneratedColumn<int> syncAttempts = GeneratedColumn<int>(
+      'sync_attempts', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _syncErrorMeta =
+      const VerificationMeta('syncError');
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+      'sync_error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastSyncAttemptAtMeta =
+      const VerificationMeta('lastSyncAttemptAt');
+  @override
+  late final GeneratedColumn<DateTime> lastSyncAttemptAt =
+      GeneratedColumn<DateTime>('last_sync_attempt_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncedAtMeta =
+      const VerificationMeta('syncedAt');
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+      'synced_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _localUpdatedAtMeta =
+      const VerificationMeta('localUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>('local_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
+  static const VerificationMeta _serverUpdatedAtMeta =
+      const VerificationMeta('serverUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> serverUpdatedAt =
+      GeneratedColumn<DateTime>('server_updated_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncVersionMeta =
+      const VerificationMeta('syncVersion');
+  @override
+  late final GeneratedColumn<int> syncVersion = GeneratedColumn<int>(
+      'sync_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _deletedLocallyMeta =
+      const VerificationMeta('deletedLocally');
+  @override
+  late final GeneratedColumn<bool> deletedLocally = GeneratedColumn<bool>(
+      'deleted_locally', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("deleted_locally" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -5275,6 +5347,16 @@ class $DocumentosReurbTable extends DocumentosReurb
         arquivoPath,
         observacoes,
         synced,
+        sourceDeviceId,
+        syncStatus,
+        syncAttempts,
+        syncError,
+        lastSyncAttemptAt,
+        syncedAt,
+        localUpdatedAt,
+        serverUpdatedAt,
+        syncVersion,
+        deletedLocally,
         createdAt
       ];
   @override
@@ -5343,6 +5425,62 @@ class $DocumentosReurbTable extends DocumentosReurb
       context.handle(_syncedMeta,
           synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta));
     }
+    if (data.containsKey('source_device_id')) {
+      context.handle(
+          _sourceDeviceIdMeta,
+          sourceDeviceId.isAcceptableOrUnknown(
+              data['source_device_id']!, _sourceDeviceIdMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
+    if (data.containsKey('sync_attempts')) {
+      context.handle(
+          _syncAttemptsMeta,
+          syncAttempts.isAcceptableOrUnknown(
+              data['sync_attempts']!, _syncAttemptsMeta));
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(_syncErrorMeta,
+          syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta));
+    }
+    if (data.containsKey('last_sync_attempt_at')) {
+      context.handle(
+          _lastSyncAttemptAtMeta,
+          lastSyncAttemptAt.isAcceptableOrUnknown(
+              data['last_sync_attempt_at']!, _lastSyncAttemptAtMeta));
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(_syncedAtMeta,
+          syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta));
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+          _localUpdatedAtMeta,
+          localUpdatedAt.isAcceptableOrUnknown(
+              data['local_updated_at']!, _localUpdatedAtMeta));
+    }
+    if (data.containsKey('server_updated_at')) {
+      context.handle(
+          _serverUpdatedAtMeta,
+          serverUpdatedAt.isAcceptableOrUnknown(
+              data['server_updated_at']!, _serverUpdatedAtMeta));
+    }
+    if (data.containsKey('sync_version')) {
+      context.handle(
+          _syncVersionMeta,
+          syncVersion.isAcceptableOrUnknown(
+              data['sync_version']!, _syncVersionMeta));
+    }
+    if (data.containsKey('deleted_locally')) {
+      context.handle(
+          _deletedLocallyMeta,
+          deletedLocally.isAcceptableOrUnknown(
+              data['deleted_locally']!, _deletedLocallyMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -5374,6 +5512,27 @@ class $DocumentosReurbTable extends DocumentosReurb
           .read(DriftSqlType.string, data['${effectivePrefix}observacoes']),
       synced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}synced'])!,
+      sourceDeviceId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_device_id']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
+      syncAttempts: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sync_attempts'])!,
+      syncError: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_error']),
+      lastSyncAttemptAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}last_sync_attempt_at']),
+      syncedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}synced_at']),
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}local_updated_at'])!,
+      serverUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}server_updated_at']),
+      syncVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sync_version'])!,
+      deletedLocally: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted_locally'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -5396,6 +5555,16 @@ class DocumentosReurbData extends DataClass
   final String arquivoPath;
   final String? observacoes;
   final bool synced;
+  final String? sourceDeviceId;
+  final String syncStatus;
+  final int syncAttempts;
+  final String? syncError;
+  final DateTime? lastSyncAttemptAt;
+  final DateTime? syncedAt;
+  final DateTime localUpdatedAt;
+  final DateTime? serverUpdatedAt;
+  final int syncVersion;
+  final bool deletedLocally;
   final DateTime createdAt;
   const DocumentosReurbData(
       {required this.id,
@@ -5407,6 +5576,16 @@ class DocumentosReurbData extends DataClass
       required this.arquivoPath,
       this.observacoes,
       required this.synced,
+      this.sourceDeviceId,
+      required this.syncStatus,
+      required this.syncAttempts,
+      this.syncError,
+      this.lastSyncAttemptAt,
+      this.syncedAt,
+      required this.localUpdatedAt,
+      this.serverUpdatedAt,
+      required this.syncVersion,
+      required this.deletedLocally,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5426,6 +5605,26 @@ class DocumentosReurbData extends DataClass
       map['observacoes'] = Variable<String>(observacoes);
     }
     map['synced'] = Variable<bool>(synced);
+    if (!nullToAbsent || sourceDeviceId != null) {
+      map['source_device_id'] = Variable<String>(sourceDeviceId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['sync_attempts'] = Variable<int>(syncAttempts);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    if (!nullToAbsent || lastSyncAttemptAt != null) {
+      map['last_sync_attempt_at'] = Variable<DateTime>(lastSyncAttemptAt);
+    }
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || serverUpdatedAt != null) {
+      map['server_updated_at'] = Variable<DateTime>(serverUpdatedAt);
+    }
+    map['sync_version'] = Variable<int>(syncVersion);
+    map['deleted_locally'] = Variable<bool>(deletedLocally);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -5447,6 +5646,26 @@ class DocumentosReurbData extends DataClass
           ? const Value.absent()
           : Value(observacoes),
       synced: Value(synced),
+      sourceDeviceId: sourceDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceDeviceId),
+      syncStatus: Value(syncStatus),
+      syncAttempts: Value(syncAttempts),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      lastSyncAttemptAt: lastSyncAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncAttemptAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      localUpdatedAt: Value(localUpdatedAt),
+      serverUpdatedAt: serverUpdatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverUpdatedAt),
+      syncVersion: Value(syncVersion),
+      deletedLocally: Value(deletedLocally),
       createdAt: Value(createdAt),
     );
   }
@@ -5464,6 +5683,17 @@ class DocumentosReurbData extends DataClass
       arquivoPath: serializer.fromJson<String>(json['arquivoPath']),
       observacoes: serializer.fromJson<String?>(json['observacoes']),
       synced: serializer.fromJson<bool>(json['synced']),
+      sourceDeviceId: serializer.fromJson<String?>(json['sourceDeviceId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncAttempts: serializer.fromJson<int>(json['syncAttempts']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      lastSyncAttemptAt:
+          serializer.fromJson<DateTime?>(json['lastSyncAttemptAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      serverUpdatedAt: serializer.fromJson<DateTime?>(json['serverUpdatedAt']),
+      syncVersion: serializer.fromJson<int>(json['syncVersion']),
+      deletedLocally: serializer.fromJson<bool>(json['deletedLocally']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -5480,6 +5710,16 @@ class DocumentosReurbData extends DataClass
       'arquivoPath': serializer.toJson<String>(arquivoPath),
       'observacoes': serializer.toJson<String?>(observacoes),
       'synced': serializer.toJson<bool>(synced),
+      'sourceDeviceId': serializer.toJson<String?>(sourceDeviceId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncAttempts': serializer.toJson<int>(syncAttempts),
+      'syncError': serializer.toJson<String?>(syncError),
+      'lastSyncAttemptAt': serializer.toJson<DateTime?>(lastSyncAttemptAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'serverUpdatedAt': serializer.toJson<DateTime?>(serverUpdatedAt),
+      'syncVersion': serializer.toJson<int>(syncVersion),
+      'deletedLocally': serializer.toJson<bool>(deletedLocally),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -5494,6 +5734,16 @@ class DocumentosReurbData extends DataClass
           String? arquivoPath,
           Value<String?> observacoes = const Value.absent(),
           bool? synced,
+          Value<String?> sourceDeviceId = const Value.absent(),
+          String? syncStatus,
+          int? syncAttempts,
+          Value<String?> syncError = const Value.absent(),
+          Value<DateTime?> lastSyncAttemptAt = const Value.absent(),
+          Value<DateTime?> syncedAt = const Value.absent(),
+          DateTime? localUpdatedAt,
+          Value<DateTime?> serverUpdatedAt = const Value.absent(),
+          int? syncVersion,
+          bool? deletedLocally,
           DateTime? createdAt}) =>
       DocumentosReurbData(
         id: id ?? this.id,
@@ -5507,6 +5757,21 @@ class DocumentosReurbData extends DataClass
         arquivoPath: arquivoPath ?? this.arquivoPath,
         observacoes: observacoes.present ? observacoes.value : this.observacoes,
         synced: synced ?? this.synced,
+        sourceDeviceId:
+            sourceDeviceId.present ? sourceDeviceId.value : this.sourceDeviceId,
+        syncStatus: syncStatus ?? this.syncStatus,
+        syncAttempts: syncAttempts ?? this.syncAttempts,
+        syncError: syncError.present ? syncError.value : this.syncError,
+        lastSyncAttemptAt: lastSyncAttemptAt.present
+            ? lastSyncAttemptAt.value
+            : this.lastSyncAttemptAt,
+        syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+        localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+        serverUpdatedAt: serverUpdatedAt.present
+            ? serverUpdatedAt.value
+            : this.serverUpdatedAt,
+        syncVersion: syncVersion ?? this.syncVersion,
+        deletedLocally: deletedLocally ?? this.deletedLocally,
         createdAt: createdAt ?? this.createdAt,
       );
   DocumentosReurbData copyWithCompanion(DocumentosReurbCompanion data) {
@@ -5527,6 +5792,30 @@ class DocumentosReurbData extends DataClass
       observacoes:
           data.observacoes.present ? data.observacoes.value : this.observacoes,
       synced: data.synced.present ? data.synced.value : this.synced,
+      sourceDeviceId: data.sourceDeviceId.present
+          ? data.sourceDeviceId.value
+          : this.sourceDeviceId,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      syncAttempts: data.syncAttempts.present
+          ? data.syncAttempts.value
+          : this.syncAttempts,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      lastSyncAttemptAt: data.lastSyncAttemptAt.present
+          ? data.lastSyncAttemptAt.value
+          : this.lastSyncAttemptAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      serverUpdatedAt: data.serverUpdatedAt.present
+          ? data.serverUpdatedAt.value
+          : this.serverUpdatedAt,
+      syncVersion:
+          data.syncVersion.present ? data.syncVersion.value : this.syncVersion,
+      deletedLocally: data.deletedLocally.present
+          ? data.deletedLocally.value
+          : this.deletedLocally,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -5543,14 +5832,43 @@ class DocumentosReurbData extends DataClass
           ..write('arquivoPath: $arquivoPath, ')
           ..write('observacoes: $observacoes, ')
           ..write('synced: $synced, ')
+          ..write('sourceDeviceId: $sourceDeviceId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncAttempts: $syncAttempts, ')
+          ..write('syncError: $syncError, ')
+          ..write('lastSyncAttemptAt: $lastSyncAttemptAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('serverUpdatedAt: $serverUpdatedAt, ')
+          ..write('syncVersion: $syncVersion, ')
+          ..write('deletedLocally: $deletedLocally, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, projetoId, selagemId, cadastroSocialId,
-      codigoSelo, tipoDocumento, arquivoPath, observacoes, synced, createdAt);
+  int get hashCode => Object.hash(
+      id,
+      projetoId,
+      selagemId,
+      cadastroSocialId,
+      codigoSelo,
+      tipoDocumento,
+      arquivoPath,
+      observacoes,
+      synced,
+      sourceDeviceId,
+      syncStatus,
+      syncAttempts,
+      syncError,
+      lastSyncAttemptAt,
+      syncedAt,
+      localUpdatedAt,
+      serverUpdatedAt,
+      syncVersion,
+      deletedLocally,
+      createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5564,6 +5882,16 @@ class DocumentosReurbData extends DataClass
           other.arquivoPath == this.arquivoPath &&
           other.observacoes == this.observacoes &&
           other.synced == this.synced &&
+          other.sourceDeviceId == this.sourceDeviceId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncAttempts == this.syncAttempts &&
+          other.syncError == this.syncError &&
+          other.lastSyncAttemptAt == this.lastSyncAttemptAt &&
+          other.syncedAt == this.syncedAt &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.serverUpdatedAt == this.serverUpdatedAt &&
+          other.syncVersion == this.syncVersion &&
+          other.deletedLocally == this.deletedLocally &&
           other.createdAt == this.createdAt);
 }
 
@@ -5577,6 +5905,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
   final Value<String> arquivoPath;
   final Value<String?> observacoes;
   final Value<bool> synced;
+  final Value<String?> sourceDeviceId;
+  final Value<String> syncStatus;
+  final Value<int> syncAttempts;
+  final Value<String?> syncError;
+  final Value<DateTime?> lastSyncAttemptAt;
+  final Value<DateTime?> syncedAt;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> serverUpdatedAt;
+  final Value<int> syncVersion;
+  final Value<bool> deletedLocally;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const DocumentosReurbCompanion({
@@ -5589,6 +5927,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
     this.arquivoPath = const Value.absent(),
     this.observacoes = const Value.absent(),
     this.synced = const Value.absent(),
+    this.sourceDeviceId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncAttempts = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.lastSyncAttemptAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.serverUpdatedAt = const Value.absent(),
+    this.syncVersion = const Value.absent(),
+    this.deletedLocally = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5602,6 +5950,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
     required String arquivoPath,
     this.observacoes = const Value.absent(),
     this.synced = const Value.absent(),
+    this.sourceDeviceId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncAttempts = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.lastSyncAttemptAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.serverUpdatedAt = const Value.absent(),
+    this.syncVersion = const Value.absent(),
+    this.deletedLocally = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -5619,6 +5977,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
     Expression<String>? arquivoPath,
     Expression<String>? observacoes,
     Expression<bool>? synced,
+    Expression<String>? sourceDeviceId,
+    Expression<String>? syncStatus,
+    Expression<int>? syncAttempts,
+    Expression<String>? syncError,
+    Expression<DateTime>? lastSyncAttemptAt,
+    Expression<DateTime>? syncedAt,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? serverUpdatedAt,
+    Expression<int>? syncVersion,
+    Expression<bool>? deletedLocally,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -5632,6 +6000,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
       if (arquivoPath != null) 'arquivo_path': arquivoPath,
       if (observacoes != null) 'observacoes': observacoes,
       if (synced != null) 'synced': synced,
+      if (sourceDeviceId != null) 'source_device_id': sourceDeviceId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncAttempts != null) 'sync_attempts': syncAttempts,
+      if (syncError != null) 'sync_error': syncError,
+      if (lastSyncAttemptAt != null) 'last_sync_attempt_at': lastSyncAttemptAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (serverUpdatedAt != null) 'server_updated_at': serverUpdatedAt,
+      if (syncVersion != null) 'sync_version': syncVersion,
+      if (deletedLocally != null) 'deleted_locally': deletedLocally,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5647,6 +6025,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
       Value<String>? arquivoPath,
       Value<String?>? observacoes,
       Value<bool>? synced,
+      Value<String?>? sourceDeviceId,
+      Value<String>? syncStatus,
+      Value<int>? syncAttempts,
+      Value<String?>? syncError,
+      Value<DateTime?>? lastSyncAttemptAt,
+      Value<DateTime?>? syncedAt,
+      Value<DateTime>? localUpdatedAt,
+      Value<DateTime?>? serverUpdatedAt,
+      Value<int>? syncVersion,
+      Value<bool>? deletedLocally,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return DocumentosReurbCompanion(
@@ -5659,6 +6047,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
       arquivoPath: arquivoPath ?? this.arquivoPath,
       observacoes: observacoes ?? this.observacoes,
       synced: synced ?? this.synced,
+      sourceDeviceId: sourceDeviceId ?? this.sourceDeviceId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncAttempts: syncAttempts ?? this.syncAttempts,
+      syncError: syncError ?? this.syncError,
+      lastSyncAttemptAt: lastSyncAttemptAt ?? this.lastSyncAttemptAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      serverUpdatedAt: serverUpdatedAt ?? this.serverUpdatedAt,
+      syncVersion: syncVersion ?? this.syncVersion,
+      deletedLocally: deletedLocally ?? this.deletedLocally,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -5694,6 +6092,36 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
     if (synced.present) {
       map['synced'] = Variable<bool>(synced.value);
     }
+    if (sourceDeviceId.present) {
+      map['source_device_id'] = Variable<String>(sourceDeviceId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncAttempts.present) {
+      map['sync_attempts'] = Variable<int>(syncAttempts.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (lastSyncAttemptAt.present) {
+      map['last_sync_attempt_at'] = Variable<DateTime>(lastSyncAttemptAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (serverUpdatedAt.present) {
+      map['server_updated_at'] = Variable<DateTime>(serverUpdatedAt.value);
+    }
+    if (syncVersion.present) {
+      map['sync_version'] = Variable<int>(syncVersion.value);
+    }
+    if (deletedLocally.present) {
+      map['deleted_locally'] = Variable<bool>(deletedLocally.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5715,6 +6143,16 @@ class DocumentosReurbCompanion extends UpdateCompanion<DocumentosReurbData> {
           ..write('arquivoPath: $arquivoPath, ')
           ..write('observacoes: $observacoes, ')
           ..write('synced: $synced, ')
+          ..write('sourceDeviceId: $sourceDeviceId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncAttempts: $syncAttempts, ')
+          ..write('syncError: $syncError, ')
+          ..write('lastSyncAttemptAt: $lastSyncAttemptAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('serverUpdatedAt: $serverUpdatedAt, ')
+          ..write('syncVersion: $syncVersion, ')
+          ..write('deletedLocally: $deletedLocally, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -10645,6 +11083,16 @@ typedef $$DocumentosReurbTableCreateCompanionBuilder = DocumentosReurbCompanion
   required String arquivoPath,
   Value<String?> observacoes,
   Value<bool> synced,
+  Value<String?> sourceDeviceId,
+  Value<String> syncStatus,
+  Value<int> syncAttempts,
+  Value<String?> syncError,
+  Value<DateTime?> lastSyncAttemptAt,
+  Value<DateTime?> syncedAt,
+  Value<DateTime> localUpdatedAt,
+  Value<DateTime?> serverUpdatedAt,
+  Value<int> syncVersion,
+  Value<bool> deletedLocally,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -10659,6 +11107,16 @@ typedef $$DocumentosReurbTableUpdateCompanionBuilder = DocumentosReurbCompanion
   Value<String> arquivoPath,
   Value<String?> observacoes,
   Value<bool> synced,
+  Value<String?> sourceDeviceId,
+  Value<String> syncStatus,
+  Value<int> syncAttempts,
+  Value<String?> syncError,
+  Value<DateTime?> lastSyncAttemptAt,
+  Value<DateTime?> syncedAt,
+  Value<DateTime> localUpdatedAt,
+  Value<DateTime?> serverUpdatedAt,
+  Value<int> syncVersion,
+  Value<bool> deletedLocally,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -10699,6 +11157,41 @@ class $$DocumentosReurbTableFilterComposer
 
   ColumnFilters<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get syncAttempts => $composableBuilder(
+      column: $table.syncAttempts, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+      column: $table.syncError, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastSyncAttemptAt => $composableBuilder(
+      column: $table.lastSyncAttemptAt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+      column: $table.syncedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+      column: $table.localUpdatedAt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get serverUpdatedAt => $composableBuilder(
+      column: $table.serverUpdatedAt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get syncVersion => $composableBuilder(
+      column: $table.syncVersion, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get deletedLocally => $composableBuilder(
+      column: $table.deletedLocally,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -10742,6 +11235,42 @@ class $$DocumentosReurbTableOrderingComposer
   ColumnOrderings<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncAttempts => $composableBuilder(
+      column: $table.syncAttempts,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+      column: $table.syncError, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastSyncAttemptAt => $composableBuilder(
+      column: $table.lastSyncAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+      column: $table.syncedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+      column: $table.localUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get serverUpdatedAt => $composableBuilder(
+      column: $table.serverUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncVersion => $composableBuilder(
+      column: $table.syncVersion, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get deletedLocally => $composableBuilder(
+      column: $table.deletedLocally,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -10781,6 +11310,36 @@ class $$DocumentosReurbTableAnnotationComposer
 
   GeneratedColumn<bool> get synced =>
       $composableBuilder(column: $table.synced, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<int> get syncAttempts => $composableBuilder(
+      column: $table.syncAttempts, builder: (column) => column);
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSyncAttemptAt => $composableBuilder(
+      column: $table.lastSyncAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+      column: $table.localUpdatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get serverUpdatedAt => $composableBuilder(
+      column: $table.serverUpdatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get syncVersion => $composableBuilder(
+      column: $table.syncVersion, builder: (column) => column);
+
+  GeneratedColumn<bool> get deletedLocally => $composableBuilder(
+      column: $table.deletedLocally, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -10822,6 +11381,16 @@ class $$DocumentosReurbTableTableManager extends RootTableManager<
             Value<String> arquivoPath = const Value.absent(),
             Value<String?> observacoes = const Value.absent(),
             Value<bool> synced = const Value.absent(),
+            Value<String?> sourceDeviceId = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            Value<int> syncAttempts = const Value.absent(),
+            Value<String?> syncError = const Value.absent(),
+            Value<DateTime?> lastSyncAttemptAt = const Value.absent(),
+            Value<DateTime?> syncedAt = const Value.absent(),
+            Value<DateTime> localUpdatedAt = const Value.absent(),
+            Value<DateTime?> serverUpdatedAt = const Value.absent(),
+            Value<int> syncVersion = const Value.absent(),
+            Value<bool> deletedLocally = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -10835,6 +11404,16 @@ class $$DocumentosReurbTableTableManager extends RootTableManager<
             arquivoPath: arquivoPath,
             observacoes: observacoes,
             synced: synced,
+            sourceDeviceId: sourceDeviceId,
+            syncStatus: syncStatus,
+            syncAttempts: syncAttempts,
+            syncError: syncError,
+            lastSyncAttemptAt: lastSyncAttemptAt,
+            syncedAt: syncedAt,
+            localUpdatedAt: localUpdatedAt,
+            serverUpdatedAt: serverUpdatedAt,
+            syncVersion: syncVersion,
+            deletedLocally: deletedLocally,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -10848,6 +11427,16 @@ class $$DocumentosReurbTableTableManager extends RootTableManager<
             required String arquivoPath,
             Value<String?> observacoes = const Value.absent(),
             Value<bool> synced = const Value.absent(),
+            Value<String?> sourceDeviceId = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            Value<int> syncAttempts = const Value.absent(),
+            Value<String?> syncError = const Value.absent(),
+            Value<DateTime?> lastSyncAttemptAt = const Value.absent(),
+            Value<DateTime?> syncedAt = const Value.absent(),
+            Value<DateTime> localUpdatedAt = const Value.absent(),
+            Value<DateTime?> serverUpdatedAt = const Value.absent(),
+            Value<int> syncVersion = const Value.absent(),
+            Value<bool> deletedLocally = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -10861,6 +11450,16 @@ class $$DocumentosReurbTableTableManager extends RootTableManager<
             arquivoPath: arquivoPath,
             observacoes: observacoes,
             synced: synced,
+            sourceDeviceId: sourceDeviceId,
+            syncStatus: syncStatus,
+            syncAttempts: syncAttempts,
+            syncError: syncError,
+            lastSyncAttemptAt: lastSyncAttemptAt,
+            syncedAt: syncedAt,
+            localUpdatedAt: localUpdatedAt,
+            serverUpdatedAt: serverUpdatedAt,
+            syncVersion: syncVersion,
+            deletedLocally: deletedLocally,
             createdAt: createdAt,
             rowid: rowid,
           ),

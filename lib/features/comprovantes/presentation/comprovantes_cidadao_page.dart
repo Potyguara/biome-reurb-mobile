@@ -1,3 +1,4 @@
+import 'package:biome_reurb/features/mobile/presentation/device_identity_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
@@ -204,6 +205,17 @@ class _ComprovantesCidadaoPageState
 
     final codigoSelo = _text(cadastro['codigo_selo']);
 
+    final projetoId = cadastro['projeto_id']?.toString().trim();
+
+    if (projetoId == null || projetoId.isEmpty) {
+      await _mostrarAviso(
+        titulo: 'Projeto não identificado',
+        mensagem:
+            'Não foi possível identificar o projeto vinculado a este cadastro.',
+      );
+      return;
+    }
+
     LoadingDialog.show(
       context,
       title: 'Gerando comprovante',
@@ -215,6 +227,7 @@ class _ComprovantesCidadaoPageState
       final db = ref.read(appDatabaseProvider);
 
       final documentos = _documentosFromRaw(cadastro['documentos_lista']);
+      final sourceDeviceId = await ref.read(deviceIdentityProvider.future);
 
       final pdfFile = await ReurbReceiptPdfService().generateCompleteReceiptPdf(
         projetoNome: _text(cadastro['projeto_nome']),
@@ -257,7 +270,8 @@ class _ComprovantesCidadaoPageState
 
       await db.inserirDocumentoReurb(
         id: const Uuid().v4(),
-        projetoId: _text(cadastro['projeto_id']),
+        projetoId: projetoId,
+        sourceDeviceId: sourceDeviceId,
         selagemId: cadastro['selagem_id']?.toString(),
         cadastroSocialId: cadastro['cadastro_social_id']?.toString(),
         codigoSelo: codigoSelo,
